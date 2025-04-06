@@ -26,40 +26,49 @@ class AuthController extends Controller
      // Registrasi
      public function register(Request $request)
      {
-       $validator = Validator::make($request->all(), [
-       'name' => 'required|string|max:255',
-       'nim' => 'required|string|unique:users,nim',
-       'email' => 'required|email|unique:users,email',
-       'password' => 'required|string|min:6|confirmed',
-       'ktmm' => 'nullable|string',
-       ]);
+     $validator = Validator::make($request->all(), [
+     'name' => 'required|string|max:255',
+     'nim' => 'required|string|unique:users,nim',
+     'email' => 'required|email|unique:users,email',
+     'password' => 'required|string|min:6|confirmed',
+     'ktmm' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+     ]);
 
-       if ($validator->fails()) {
-       return response()->json($validator->errors(), 422);
-       }
+     if ($validator->fails()) {
+     return response()->json($validator->errors(), 422);
+     }
 
-       // Buat user baru
-       $user = User::create([
-       'name' => $request->name,
-       'nim' => $request->nim,
-       'email' => $request->email,
-       'password' => Hash::make($request->password),
-       'ktmm' => $request->ktmm,
-       ]);
+     $filePath = null;
+     if ($request->hasFile('ktmm')) {
+    //  $file = $request->file('ktmm');
+    //  $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
+    //  $filePath = $file->storeAs('ktmm', $fileName, 'public');
 
-       // Buat token setelah user dibuat
-       $token = $user->createToken('auth_token')->plainTextToken;
+    return response()->json([
+    'message' => 'foto berhasil',
 
-       // Simpan token ke tabel users
-       $user->update(['token' => $token]);
+    ]);
+     }
 
-       return response()->json([
-       'message' => 'Registrasi berhasil',
-       'user' => $user,
-       'access_token' => $token,
-       'token_type' => 'Bearer',
-       ]); }
+     $user = User::create([
+     'name' => $request->name,
+     'nim' => $request->nim,
+     'email' => $request->email,
+     'password' => Hash::make($request->password),
+     'ktmm' => $filePath, // Simpan path ke DB
+     ]);
 
+     $token = $user->createToken('auth_token')->plainTextToken;
+
+     $user->update(['token' => $token]);
+
+     return response()->json([
+     'message' => 'Registrasi berhasil',
+     'user' => $user,
+     'access_token' => $token,
+     'token_type' => 'Bearer',
+     ]);
+     }
      // Login
      public function login(Request $request)
      {
