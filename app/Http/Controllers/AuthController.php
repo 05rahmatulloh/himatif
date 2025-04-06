@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\resendlink;
 use Illuminate\Http\Request;
-
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 use Illuminate\Support\Facades\DB;
 use App\Models\Mahasiswa;
 use Illuminate\Support\Facades\Auth;
@@ -40,14 +40,12 @@ class AuthController extends Controller
 
      $filePath = null;
      if ($request->hasFile('ktmm')) {
-    //  $file = $request->file('ktmm');
-    //  $fileName = Str::uuid() . '.' . $file->getClientOriginalExtension();
-    //  $filePath = $file->storeAs('ktmm', $fileName, 'public');
+      $uploadedFileUrl = Cloudinary::upload($request->file('file')->getRealPath())->getSecurePath();
 
-    return response()->json([
-    'message' => 'foto berhasil',
-
-    ]);
+      return response()->json([
+      'message' => 'Upload berhasil',
+      'url' => $uploadedFileUrl
+      ]);
      }
 
      $user = User::create([
