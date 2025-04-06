@@ -6,6 +6,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 
 // Route::apiResource('/auth', AuthController::class);
+
+
+Route::get('/auth',function(){
+  echo "ini adalah auth";
+});
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/auth/registrasi',[ AuthController::class,'register']);
 
