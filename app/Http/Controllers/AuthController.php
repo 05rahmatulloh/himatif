@@ -59,7 +59,7 @@ class AuthController extends Controller
 
  // Simpan ke folder public/ktmm
  $file->move(public_path('ktmm'), $filename);
-    $ktmmPath = `ktmm/` . $filename;
+    $ktmmPath = `ktmm`.'\ ' . $filename;
 
 //    return "berhasil";
     } else {
