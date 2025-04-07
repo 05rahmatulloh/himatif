@@ -15,6 +15,12 @@ use App\Models\PasswordResetToken;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Yaza\LaravelGoogleDriveStorage\Gdrive;
+use App\Models\DataMahasiswa;
+
+// use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
@@ -26,46 +32,103 @@ class AuthController extends Controller
      // Registrasi
      public function register(Request $request)
      {
-     $validator = Validator::make($request->all(), [
-     'name' => 'required|string|max:255',
-     'nim' => 'required|string|unique:users,nim',
-     'email' => 'required|email|unique:users,email',
-     'password' => 'required|string|min:6|confirmed',
-     'ktmm' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
-     ]);
+      $validator = Validator::make($request->all(), [
+      'name' => 'required|string|max:255',
+      'nim' => 'required|string|unique:users,nim',
+      'email' => 'required|email|unique:users,email',
+      'password' => 'required|string|min:6|confirmed',
+      'ktmm' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+      'nama_mabna' => 'required|string|max:255',
+      'no_kamar' => 'required|string|max:10',
+      'link_ktmm' => 'nullable|url|max:2048',
+      ]);
 
      if ($validator->fails()) {
      return response()->json($validator->errors(), 422);
      }
+///////////////////////////////////////////////////////////////////
 
-     $filePath = null;
-     if ($request->hasFile('ktmm')) {
-      $uploadedFileUrl = Cloudinary::upload($request->file('file')->getRealPath())->getSecurePath();
+   if ($request->hasFile('ktmm')) {
+ $file = $request->file('ktmm');
 
-      return response()->json([
-      'message' => 'Upload berhasil',
-      'url' => $uploadedFileUrl
-      ]);
-     }
+ // Ambil ekstensi file
+ $extension = $file->getClientOriginalExtension();
 
-     $user = User::create([
-     'name' => $request->name,
-     'nim' => $request->nim,
-     'email' => $request->email,
-     'password' => Hash::make($request->password),
-     'ktmm' => $filePath, // Simpan path ke DB
-     ]);
+ // Rename file sesuai NIM
+ $filename =  $request->nim ."_".$request->name .'.' . $extension;
 
-     $token = $user->createToken('auth_token')->plainTextToken;
+ // Simpan ke folder public/ktmm
+ $file->move(public_path('ktmm'), $filename);
+    $ktmmPath = 'ktmm/' . $filename;
 
-     $user->update(['token' => $token]);
+//    return "berhasil";
+    } else {
+    return response()->json(['message' => 'bukan file'], 422);
 
-     return response()->json([
-     'message' => 'Registrasi berhasil',
-     'user' => $user,
-     'access_token' => $token,
-     'token_type' => 'Bearer',
-     ]);
+   }
+    $fullPath = public_path($ktmmPath); // ubah ke path absolut
+
+
+
+
+
+    $gamabr=Storage::disk('google')->put($filename, File::get($fullPath));
+
+
+
+    if (File::exists($fullPath)) {
+    File::delete($fullPath);
+    }
+
+
+
+
+/////////////////////
+
+
+
+
+
+
+     //////////////////////////////////////
+
+
+DB::beginTransaction();
+
+try {
+// Simpan ke tabel users
+ $user = User::create([
+ 'name' => $request->name,
+ 'nim' => $request->nim,
+ 'email' => $request->email,
+ 'password' => Hash::make($request->password),
+ 'ktmm' => $filename, // Simpan path ke DB
+ ]);
+
+ $token = $user->createToken('auth_token')->plainTextToken;
+
+ $user->update(['token' => $token]);
+
+
+// Simpan ke tabel data_mahasiswa
+DataMahasiswa::create([
+'user_id' => $user->id,
+'no_kamar' => $request->no_kamar,
+'nama_mabna' => $request->nama_mabna,
+'link_ktmm' =>null,
+]);
+
+DB::commit(); // Semua berhasil
+return response()->json(['message' => 'Data berhasil disimpan',
+'access_token' => $token,
+], 200);
+
+} catch (\Exception $e) {
+DB::rollBack(); // Gagal, batalkan semuanya
+return response()->json(['message' => 'Terjadi kesalahan: '.$e->getMessage()], 500);
+}
+
+     ///////////////////////////////////////
      }
      // Login
      public function login(Request $request)
@@ -234,4 +297,35 @@ return response()->json(['message' => 'Failed to update password'], 400);
 }
 
 }
+
+
+
+
+
+
+
+
+
+
+
+public function coba(){
+
+
+$filepath = public_path('tess.jpg');
+
+
+// return $filepath;
+
+ $gamabr=Storage::disk('google')->put("coba1", File::get($filepath));
+
+
+
+
+ $data =Gdrive::get('1AcoDucSS1jsOOQ1amjyOGD_-zQdBSu9d/tess.jpg');
+// Gdrive::all('laravel', true);
+return response()->json([
+'data' => $data,
+]);
+}
+
 }

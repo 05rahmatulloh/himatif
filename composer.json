@@ -15,7 +15,8 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10.1",
         "symfony/http-client": "^7.2",
-        "symfony/mailgun-mailer": "^7.2"
+        "symfony/mailgun-mailer": "^7.2",
+        "yaza/laravel-google-drive-storage": "^4.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
