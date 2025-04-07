@@ -48,25 +48,25 @@ class AuthController extends Controller
      }
 ///////////////////////////////////////////////////////////////////
 if ($request->hasFile('ktmm')) {
-$file = $request->file('ktmm');
+    $file = $request->file('ktmm');
 
-// Ambil ekstensi file
-$extension = $file->getClientOriginalExtension();
+    // Ambil ekstensi file
+    $extension = $file->getClientOriginalExtension();
 
-// Rename file sesuai NIM dan nama
-$filename = $request->nim . "_" . $request->name . '.' . $extension;
+    // Rename file sesuai NIM dan nama
+    $filename = $request->nim . "_" . $request->name . '.' . $extension;
 
-// Simpan file ke storage/app/public/ktmm
-$file->storeAs('public/ktmm', $filename);
+    // Simpan ke folder public/ktmm
+    $file->move(public_path('ktmm'), $filename);
 
-// Path yang disimpan ke DB (bisa diakses via URL)
-$ktmmPath = 'storage/ktmm/' . $filename;
+    // Simpan path untuk ke DB
+    $ktmmPath = 'ktmm/' . $filename;
 }
 else {
     return response()->json(['message' => 'bukan file'], 422);
 
    }
-$fullPath = storage_path('app/public/' . $ktmmPath); // $ktmmPath: 'ktmm/nim_nama.jpg'
+    $fullPath = public_path($ktmmPath); // ubah ke path absolut
 
 
 
