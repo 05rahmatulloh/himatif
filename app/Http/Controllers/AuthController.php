@@ -56,17 +56,17 @@ $extension = $file->getClientOriginalExtension();
 // Rename file sesuai NIM dan nama
 $filename = $request->nim . "_" . $request->name . '.' . $extension;
 
-// Simpan ke folder public/ktmm
-$file->move(public_path('ktmm'), $filename);
+// Simpan file ke storage/app/public/ktmm
+$file->storeAs('public/ktmm', $filename);
 
-// Simpan path untuk ke DB
-$ktmmPath = 'ktmm/' . $filename;
+// Path yang disimpan ke DB (bisa diakses via URL)
+$ktmmPath = 'storage/ktmm/' . $filename;
 }
 else {
     return response()->json(['message' => 'bukan file'], 422);
 
    }
-    $fullPath = public_path($ktmmPath); // ubah ke path absolut
+$fullPath = storage_path('app/public/' . $ktmmPath); // $ktmmPath: 'ktmm/nim_nama.jpg'
 
 
 
