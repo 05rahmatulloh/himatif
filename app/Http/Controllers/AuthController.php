@@ -47,22 +47,22 @@ class AuthController extends Controller
      return response()->json($validator->errors(), 422);
      }
 ///////////////////////////////////////////////////////////////////
+if ($request->hasFile('ktmm')) {
+$file = $request->file('ktmm');
 
-   if ($request->hasFile('ktmm')) {
- $file = $request->file('ktmm');
+// Ambil ekstensi file
+$extension = $file->getClientOriginalExtension();
 
- // Ambil ekstensi file
- $extension = $file->getClientOriginalExtension();
+// Rename file sesuai NIM dan nama
+$filename = $request->nim . "_" . $request->name . '.' . $extension;
 
- // Rename file sesuai NIM
- $filename =  $request->nim ."_".$request->name .'.' . $extension;
+// Simpan ke folder public/ktmm
+$file->move(public_path('ktmm'), $filename);
 
- // Simpan ke folder public/ktmm
- $file->move(public_path('ktmm'), $filename);
-    $ktmmPath = `ktmm`.'/' . $filename;
-
-//    return "berhasil";
-    } else {
+// Simpan path untuk ke DB
+$ktmmPath = 'ktmm/' . $filename;
+}
+else {
     return response()->json(['message' => 'bukan file'], 422);
 
    }
